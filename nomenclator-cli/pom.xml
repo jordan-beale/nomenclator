@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>uk.co.varia</groupId>
+        <artifactId>nomenclator</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>nomenclator-cli</artifactId>
+
+    <properties>
+        <mainClass>uk.co.varia.nomenclator.cli.Main</mainClass>
+    </properties>
+
+    <dependencies>
+        <!-- cli -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+        </dependency>
+
+        <!-- annotations -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+
+        <!-- logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+
+        <!-- testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>dockerBuild</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <from>
+                        <image>eclipse-temurin:21</image>
+                    </from>
+                    <to>
+                        <image>${project.artifactId}</image>
+                    </to>
+                    <container>
+                        <mainClass>${mainClass}</mainClass>
+                        <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                        <workingDirectory>/app</workingDirectory>
+                    </container>
+                    <containerizingMode>packaged</containerizingMode>
+                    <extraDirectories>
+                        <paths>
+                            <path>
+                                <from>bin</from>
+                                <into>/app</into>
+                            </path>
+                        </paths>
+                        <permissions>
+                            <permission>
+                                <file>/app/nomenclator-cli</file>
+                                <mode>755</mode>
+                            </permission>
+                        </permissions>
+                    </extraDirectories>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

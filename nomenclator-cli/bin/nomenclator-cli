@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -Eeu
+
+java -cp @/app/jib-classpath-file @/app/jib-main-class-file "$@"

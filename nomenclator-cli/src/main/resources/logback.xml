@@ -1,0 +1,16 @@
+<configuration debug="false">
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%-40.40logger{40}] \(%-30.30thread\) %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- Logging levels -->
+    <logger name="uk.co.varia" level="INFO"/>
+    <logger name="uk.co.varia.nomenclator" level="TRACE"/>
+</configuration>
