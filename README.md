@@ -29,5 +29,5 @@ bin/build-tests.sh
 ```
 
 ### Integration tests
-Integration tests spin up the Docker image inside `testContainers` and require it to be built first.
-Run them manually or build a maven profile for them.
+Integration tests spin up the Docker image inside `testContainers` and require the image to be built first.
+Run them manually (e.g. inside an IDE of choice) or build a maven profile to run them.
