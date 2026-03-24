@@ -87,23 +87,23 @@ Normalised job titles from [/data/toNormalise.csv] to [/data/normalised.csv].
 The `--titles` and `--input` options accept CSV files in any of the following formats:
 
 **Single row:**
-\```
+```
 Software engineer,Accountant,Architect,Quantity surveyor
-\```
+```
 
 **Multi-line without header:**
-\```
+```
 Software engineer
 Accountant
 Architect
-\```
+```
 
 **Multi-line with header:**
-\```
+```
 title
 Software engineer
 Accountant
 Architect
-\```
+```
 
 The `--ouput` gets written as a multi-line without header.
