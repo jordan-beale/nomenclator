@@ -67,7 +67,7 @@ public class NormaliserImpl implements Normaliser {
                           .filter(candidate -> {
                               final var score = qualityScore(title, candidate);
                               if (score < this.threshold) {
-                                  logger.warn("No match found for [{}] — best candidate [{}] scored [{}] which is below threshold [{}]",
+                                  logger.warn("No match found for [{}]: best candidate [{}] scored [{}] which is below threshold [{}]",
                                               title, candidate, score, this.threshold);
                                   return false;
                               }
