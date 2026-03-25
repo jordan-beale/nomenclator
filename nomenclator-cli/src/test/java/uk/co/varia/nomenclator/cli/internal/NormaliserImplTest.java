@@ -261,4 +261,41 @@ class NormaliserImplTest {
         assertThatThrownBy(() -> this.cli.normalise(Path.of("src/test/resources/csv/toNormalise.txt"), null, null))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
+
+    // --- unrelated domain to exclude possibility of domain specific weighting in the Levenshtein algorithm ---
+    @ParameterizedTest(name = "''{0}'' should normalise to ''{1}''")
+    @MethodSource("vegetableCases")
+    void normalise_vegetables_returnsCorrectMatch(final String input,
+                                                  final String expected) {
+        final var normaliser = NormaliserImpl.of(Stream.of("Carrot", "Broccoli", "Courgette", "Aubergine", "Cauliflower"));
+        final var result = normaliser.normalise(input).orElse("No match found");
+        logger.debug("Vegetables: input [{}], expected [{}], result [{}]", input, expected, result);
+        assertThat(result).isEqualTo(expected);
+    }
+
+    static Stream<Arguments> vegetableCases() {
+        return Stream.of(
+                // exact
+                Arguments.of("Carrot", "Carrot"),
+
+                // typos
+                Arguments.of("Carot", "Carrot"),
+                Arguments.of("Brocoli", "Broccoli"),
+                Arguments.of("Courgete", "Courgette"),
+                Arguments.of("Aubergene", "Aubergine"),
+
+                // keyboard proximity
+                Arguments.of("Carrpt", "Carrot"),
+                Arguments.of("Broccoki", "Broccoli"),
+
+                // vowel substitution
+                Arguments.of("Coorjette", "Courgette"),
+                Arguments.of("Eubargine", "Aubergine"),
+
+                // case insensitivity
+                Arguments.of("CARROT", "Carrot"),
+                Arguments.of("broccoli", "Broccoli"),
+                Arguments.of("cOuRgEtTe", "Courgette")
+        );
+    }
 }
