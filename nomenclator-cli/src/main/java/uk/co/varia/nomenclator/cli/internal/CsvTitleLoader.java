@@ -32,14 +32,14 @@ public class CsvTitleLoader implements TitleLoader {
             throw new IllegalArgumentException("Titles file must be a CSV: " + path);
         }
 
-        try (final var lines = Files.lines(path)) {
+        try {
+            final var lines = Files.lines(path);
             return lines.flatMap(line -> Arrays.stream(line.split(",")))
-                    .map(String::trim)
-                    .map(title -> title.replaceAll("[^a-zA-Z0-9 ]", ""))
-                    .filter(line -> !line.isBlank())
-                    .filter(line -> !isHeader(line))
-                    .toList()
-                    .stream();
+                        .map(String::trim)
+                        .map(title -> title.replaceAll("[^a-zA-Z0-9 ]", ""))
+                        .filter(line -> !line.isBlank())
+                        .filter(line -> !isHeader(line))
+                        .onClose(lines::close);
         } catch (final IOException ex) {
             throw new UncheckedIOException("Failed to read titles file: " + path, ex);
         }
@@ -48,9 +48,9 @@ public class CsvTitleLoader implements TitleLoader {
     private static boolean isHeader(final String value) {
         requireNonNull(value, "Value required");
         return value.equalsIgnoreCase("title")
-                || value.equalsIgnoreCase("job title")
-                || value.equalsIgnoreCase("titles")
-                || value.equalsIgnoreCase("job titles")
-                || value.equalsIgnoreCase("name");
+               || value.equalsIgnoreCase("job title")
+               || value.equalsIgnoreCase("titles")
+               || value.equalsIgnoreCase("job titles")
+               || value.equalsIgnoreCase("name");
     }
 }

@@ -25,7 +25,7 @@ Commands:
   normaliseBatch  Normalise a file of titles against a list of normalised titles
 ```
 
-### Normalise using default titles list
+### Normalise using default titles list and default threshold
 
 ```shell
 docker run --rm nomenclator-cli:latest normalise "Java developer"
@@ -37,11 +37,11 @@ Normalising job title [Java developer]...
 Normalised job title [Java developer] to [Software engineer].
 ```
 
-### Normalise using custom titles list
+### Normalise using custom titles list and default threshold
 
 ```shell
 docker run --rm \
-  -v ~/nomenclator/nomenclator-cli/src/test/resources/csv:/data \
+  -v ./nomenclator-cli/src/test/resources/csv:/data \
   nomenclator-cli:latest \
   normalise --titles /data/multi_line_no_header.csv "customer marketing team lead"
 ```
@@ -52,11 +52,38 @@ Normalising job title [customer marketing team lead]...
 Normalised job title [customer marketing team lead] to [Customer Success Manager].
 ```
 
-### NormaliseBatch using default titles list
+### Normalise using default titles list and custom threshold
+
+```shell
+docker run --rm nomenclator-cli:latest normalise "Java developer" --threshold 1
+```
+
+Output
+```shell
+Normalising job title [Java developer]...
+Normalised job title [Java developer] to [No match found >= threshold [1.00]].
+```
+
+### Normalise using custom titles list and custom threshold
 
 ```shell
 docker run --rm \
-  -v ~/nomenclator/nomenclator-cli/src/test/resources/csv:/data \
+  -v ./nomenclator-cli/src/test/resources/csv:/data \
+  nomenclator-cli:latest \
+  normalise --titles /data/multi_line_no_header.csv "customer marketing team lead" -th 0.3
+```
+
+Output
+```shell
+Normalising job title [customer marketing team lead]...
+Normalised job title [customer marketing team lead] to [Customer Success Manager].
+```
+
+### NormaliseBatch using default titles list and default threshold
+
+```shell
+docker run --rm \
+  -v ./nomenclator-cli/src/test/resources/csv:/data \
   nomenclator-cli:latest \
   normaliseBatch --input /data/toNormalise.csv --output /data/normalised.csv
 ```
@@ -67,19 +94,82 @@ Normalising job titles from file [/data/toNormalise.csv]...
 Normalised job titles from [/data/toNormalise.csv] to [/data/normalised.csv].
 ```
 
-### NormaliseBatch using custom titles list
+```text
+Software engineer
+Software engineer
+Accountant
+Accountant
+Software engineer
+Accountant
+Software engineer
+Software engineer
+Accountant
+```
+
+### NormaliseBatch using custom titles list and default threshold
 
 ```shell
 docker run --rm \
-  -v ~/nomenclator/nomenclator-cli/src/test/resources/csv:/data \
+  -v ./nomenclator-cli/src/test/resources/csv:/data \
   nomenclator-cli:latest \
   normaliseBatch --input /data/toNormalise.csv --output /data/normalised.csv --titles /data/multi_line.csv
 ```
 
 Output
+```text
+DevOps Engineer
+DevOps Engineer
+Accountant
+Accountant
+DevOps Engineer
+Accountant
+DevOps Engineer
+Software Engineer
+Accountant
+```
+
+### NormaliseBatch using default titles list and custom threshold
+
 ```shell
-Normalising job titles from file [/data/toNormalise.csv]...
-Normalised job titles from [/data/toNormalise.csv] to [/data/normalised.csv].
+docker run --rm \
+  -v ./nomenclator-cli/src/test/resources/csv:/data \
+  nomenclator-cli:latest \
+  normaliseBatch --input /data/toNormalise.csv --output /data/normalised.csv -th 0.4
+```
+
+Output
+```text
+Software engineer
+No match found >= threshold [0.40]
+Accountant
+Accountant
+Software engineer
+Accountant
+Software engineer
+Software engineer
+No match found >= threshold [0.40]
+```
+
+### NormaliseBatch using custom titles list and custom threshold
+
+```shell
+docker run --rm \
+  -v ./nomenclator-cli/src/test/resources/csv:/data \
+  nomenclator-cli:latest \
+  normaliseBatch --input /data/toNormalise.csv --output /data/normalised.csv --titles /data/multi_line.csv -th 0.5
+```
+
+Output
+```text
+DevOps Engineer
+No match found >= threshold [0.50]
+Accountant
+Accountant
+DevOps Engineer
+Accountant
+DevOps Engineer
+Software Engineer
+No match found >= threshold [0.50]
 ```
 
 ## CSV format

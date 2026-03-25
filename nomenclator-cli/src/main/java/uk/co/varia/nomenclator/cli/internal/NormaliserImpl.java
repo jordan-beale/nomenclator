@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -18,11 +19,21 @@ public class NormaliserImpl implements Normaliser {
         return of(DEFAULT_TITLES.stream());
     }
 
+    public static NormaliserImpl of(final Double threshold) {
+        return of(DEFAULT_TITLES.stream(), threshold);
+    }
+
     public static NormaliserImpl of(final Stream<String> titles) {
-        return new NormaliserImpl(titles);
+        return of(titles, DEFAULT_THRESHOLD);
+    }
+
+    public static NormaliserImpl of(final Stream<String> titles,
+                                    final Double threshold) {
+        return new NormaliserImpl(titles, threshold);
     }
 
     private static final Logger logger = LoggerFactory.getLogger(NormaliserImpl.class);
+    static final Double DEFAULT_THRESHOLD = 0.25;
     private static final List<String> DEFAULT_TITLES = List.of("Architect",
                                                                "Software engineer",
                                                                "Quantity surveyor",
@@ -30,34 +41,47 @@ public class NormaliserImpl implements Normaliser {
     private static final Set<Character> VOWELS = Set.of('a', 'e', 'i', 'o', 'u');
 
     private final List<String> titles;
+    private final Double threshold;
 
-    public NormaliserImpl(final Stream<String> titles) {
+    public NormaliserImpl(final Stream<String> titles,
+                          final Double threshold) {
         super();
 
         logger.trace("Initialising normaliser...");
-        final var materialised = titles.toList();
-        if (materialised.isEmpty()) {
-            throw new IllegalArgumentException("Titles cannot be empty");
+        this.threshold = requireNonNull(threshold, "threshold required");
+        try (final var titlesStream = requireNonNull(titles, "Titles required")) {
+            final var materialised = titlesStream.toList();
+            if (materialised.isEmpty()) {
+                throw new IllegalArgumentException("Titles cannot be empty");
+            }
+            this.titles = materialised;
         }
-        this.titles = materialised;
         logger.debug("Normaliser initialised successfully.");
     }
 
     @Override
-    public String normalise(final String title) {
+    public Optional<String> normalise(final String title) {
         requireNonNull(title, "Title required");
         return this.titles.stream()
                           .max(Comparator.comparingDouble(candidate -> qualityScore(title, candidate)))
-                          .orElseThrow(() -> new IllegalStateException("No titles loaded"));
+                          .filter(candidate -> {
+                              final var score = qualityScore(title, candidate);
+                              if (score < this.threshold) {
+                                  logger.warn("No match found for [{}] — best candidate [{}] scored [{}] which is below threshold [{}]",
+                                              title, candidate, score, this.threshold);
+                                  return false;
+                              }
+                              return true;
+                          });
     }
 
     @Override
-    public Stream<String> normalise(final Stream<String> titles) {
+    public Stream<Optional<String>> normalise(final Stream<String> titles) {
         return titles.map(this::normalise);
     }
 
     @Override
-    public Stream<String> normalise(final String... titles) {
+    public Stream<Optional<String>> normalise(final String... titles) {
         return Arrays.stream(titles)
                      .map(this::normalise);
     }

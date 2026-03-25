@@ -27,7 +27,7 @@ class NormaliserImplTest {
     @MethodSource("titleMappings")
     void normalise_parameterised(final String input,
                                  final String expected) {
-        assertThat(this.normaliser.normalise(input)).isEqualTo(expected);
+        assertThat(this.normaliser.normalise(input).orElse("No match found")).isEqualTo(expected);
     }
 
     static Stream<Arguments> titleMappings() {
@@ -46,14 +46,23 @@ class NormaliserImplTest {
     // --- varargs ---
     @Test
     void normalise_varargs_returnsAllNormalised() {
-        assertThat(this.normaliser.normalise("Java engineer", "Chief Accountant", "Accountant"))
+        assertThat(this.normaliser.normalise("Java engineer", "Chief Accountant", "Accountant")
+                                  .map(title -> title.orElse("No match found")))
                 .containsExactly("Software engineer", "Accountant", "Accountant");
+    }
+
+    // --- threshold ---
+    @Test
+    void normalise_belowThreshold_returnsEmpty() {
+        final var normaliser = NormaliserImpl.of(Stream.of("Software engineer"), 0.99);
+        assertThat(normaliser.normalise("Zxqwerty")).isEmpty();
     }
 
     // --- stream ---
     @Test
     void normalise_stream_returnsAllNormalised() {
-        assertThat(this.normaliser.normalise(Stream.of("Java engineer", "C# engineer", "accountntant")))
+        assertThat(this.normaliser.normalise(Stream.of("Java engineer", "C# engineer", "accountntant"))
+                                  .map(title -> title.orElse("No match found")))
                 .containsExactly("Software engineer", "Software engineer", "Accountant");
     }
 
@@ -61,18 +70,18 @@ class NormaliserImplTest {
     @Test
     void normalise_customTitles_returnsCorrectTitle() {
         final var normaliser = NormaliserImpl.of(Stream.of("Doctor", "Lawyer", "Pilot"));
-        assertThat(normaliser.normalise("Flight pilot")).isEqualTo("Pilot");
+        assertThat(normaliser.normalise("Flight pilot").orElse("No match found")).isEqualTo("Pilot");
     }
 
     // --- formatting edge cases ---
     @Test
     void normalise_emptyString_returnsATitle() {
-        assertThat(this.normaliser.normalise("")).isNotNull();
+        assertThat(this.normaliser.normalise("")).isEmpty();
     }
 
     @Test
     void normalise_whitespaceOnly_returnsATitle() {
-        assertThat(this.normaliser.normalise("   ")).isNotNull();
+        assertThat(this.normaliser.normalise("   ")).isEmpty();
     }
 
     // --- exceptions ---
@@ -95,7 +104,7 @@ class NormaliserImplTest {
                                                         final String csvFile) {
         final var path = Path.of("src/test/resources/csv", csvFile);
         final var normaliser = NormaliserImpl.of(CsvTitleLoader.of().load(path));
-        assertThat(normaliser.normalise("Marketing expert")).isEqualTo("Marketing Specialist");
+        assertThat(normaliser.normalise("Marketing expert").orElse("No match found")).isEqualTo("Marketing Specialist");
     }
 
     static Stream<Arguments> csvFormats() {
@@ -112,7 +121,7 @@ class NormaliserImplTest {
                                                                       final String closer,
                                                                       final String further) {
         final var impl = NormaliserImpl.of(Stream.of(closer, further));
-        assertThat(impl.normalise(input)).isEqualTo(closer);
+        assertThat(impl.normalise(input).orElse("No match found")).isEqualTo(closer);
     }
 
     static Stream<Arguments> vowelSubstitutionCases() {
@@ -138,7 +147,7 @@ class NormaliserImplTest {
                                                                    final String closer,
                                                                    final String further) {
         final var impl = NormaliserImpl.of(Stream.of(closer, further));
-        assertThat(impl.normalise(input)).isEqualTo(closer);
+        assertThat(impl.normalise(input).orElse("No match found")).isEqualTo(closer);
     }
 
     static Stream<Arguments> keyboardProximityWeightingCases() {
@@ -164,9 +173,9 @@ class NormaliserImplTest {
     @Test
     void normalise_batchFromFile_returnsAllNormalised() {
         final var inputPath = Path.of("src/test/resources/csv/toNormalise.csv");
-        final var result = this.cli.normalise(inputPath, null).toList();
+        final var result = this.cli.normalise(inputPath, null, null).map(title -> title.orElse("No match found"));
         assertThat(result).containsExactly("Software engineer",
-                                           "Software engineer",
+                                           "No match found",
                                            "Accountant",
                                            "Accountant",
                                            "Software engineer",
@@ -180,9 +189,9 @@ class NormaliserImplTest {
     void normaliseBatch_fromFileWithCustomTitles_returnsAllNormalised() {
         final var inputPath = Path.of("src/test/resources/csv/toNormalise.csv");
         final var titlesPath = Path.of("src/test/resources/csv/multi_line.csv");
-        final var result = this.cli.normalise(inputPath, titlesPath).toList();
+        final var result = this.cli.normalise(inputPath, titlesPath, null).map(title -> title.orElse("No match found"));
         assertThat(result).containsExactly("DevOps Engineer",
-                                           "DevOps Engineer",
+                                           "No match found",
                                            "Accountant",
                                            "Accountant",
                                            "DevOps Engineer",
@@ -195,8 +204,8 @@ class NormaliserImplTest {
     @Test
     void normaliseBatch_fromStream_returnsAllNormalised() {
         final var result = this.cli.normalise(Stream.of("Java engineer", "Chief Accountant", "Back end engineer"),
-                                              null
-        ).toList();
+                                              null,
+                                              null).map(title -> title.orElse("No match found"));
         assertThat(result).containsExactly("Software engineer",
                                            "Accountant",
                                            "Software engineer");
@@ -204,13 +213,13 @@ class NormaliserImplTest {
 
     @Test
     void normaliseBatch_fromNonExistentFile_throwsException() {
-        assertThatThrownBy(() -> this.cli.normalise(Path.of("nonexistent.csv"), null))
+        assertThatThrownBy(() -> this.cli.normalise(Path.of("nonexistent.csv"), null, null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void normaliseBatch_fromNonCsvFile_throwsException() {
-        assertThatThrownBy(() -> this.cli.normalise(Path.of("src/test/resources/csv/toNormalise.txt"), null))
+        assertThatThrownBy(() -> this.cli.normalise(Path.of("src/test/resources/csv/toNormalise.txt"), null, null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

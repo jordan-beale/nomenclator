@@ -1,4 +1,6 @@
 module nomenclator.cli {
+    exports uk.co.varia.nomenclator.cli;
+
     opens uk.co.varia.nomenclator.cli to info.picocli;
 
     requires info.picocli;

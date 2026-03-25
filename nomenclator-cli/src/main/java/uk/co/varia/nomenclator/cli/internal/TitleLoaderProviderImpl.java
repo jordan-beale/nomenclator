@@ -27,6 +27,6 @@ public class TitleLoaderProviderImpl implements TitleLoaderProvider {
                       .filter(entry -> fileName.endsWith(entry.getKey()))
                       .map(Map.Entry::getValue)
                       .findFirst()
-                      .orElseThrow(() -> new IllegalArgumentException("No loader found for file: " + path));
+                      .orElseThrow(() -> new UnsupportedOperationException("Unsupported file type detected: " + path));
     }
 }

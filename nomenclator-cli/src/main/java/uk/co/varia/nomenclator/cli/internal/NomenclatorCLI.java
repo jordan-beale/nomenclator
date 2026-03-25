@@ -12,6 +12,7 @@ import uk.co.varia.nomenclator.cli.TitleLoaderProvider;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
@@ -61,20 +62,27 @@ public class NomenclatorCLI {
         this.titleLoaderProvider = titleLoaderProvider;
     }
 
-    public Stream<String> normalise(final Path inputPath,
-                                    final @Nullable Path titlesPath) {
+    public Stream<Optional<String>> normalise(final Path inputPath,
+                                              final @Nullable Path titlesPath,
+                                              final @Nullable Double threshold) {
         requireNonNull(inputPath, "Input path required");
         final var toNormalise = titleLoaderProvider.resolve(inputPath).load(inputPath);
 
-        return normalise(toNormalise, titlesPath);
+        return normalise(toNormalise, titlesPath, threshold);
     }
 
-    public Stream<String> normalise(final Stream<String> toNormalise,
-                                    final @Nullable Path titlesPath) {
+    public Stream<Optional<String>> normalise(final Stream<String> toNormalise,
+                                              final @Nullable Path titlesPath,
+                                              final @Nullable Double threshold) {
         final var normaliser = titlesPath == null
-                               ? NormaliserImpl.of()
-                               : NormaliserImpl.of(titleLoaderProvider.resolve(titlesPath)
-                                                                      .load(titlesPath));
+                               ? threshold == null
+                                 ? NormaliserImpl.of()
+                                 : NormaliserImpl.of(threshold)
+                               : threshold == null
+                                 ? NormaliserImpl.of(titleLoaderProvider.resolve(titlesPath)
+                                                                        .load(titlesPath))
+                                 : NormaliserImpl.of(titleLoaderProvider.resolve(titlesPath)
+                                                                        .load(titlesPath), threshold);
         return normaliser.normalise(toNormalise);
     }
 

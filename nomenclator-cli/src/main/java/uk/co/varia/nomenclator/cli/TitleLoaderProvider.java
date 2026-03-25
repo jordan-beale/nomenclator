@@ -11,6 +11,8 @@ public interface TitleLoaderProvider {
      *
      * @param path the path to resolve a loader for.
      * @return the appropriate title loader.
+     * @throws NullPointerException if path is null.
+     * @throws UnsupportedOperationException if no loader is registered for the given file type.
      */
     TitleLoader resolve(Path path);
 }

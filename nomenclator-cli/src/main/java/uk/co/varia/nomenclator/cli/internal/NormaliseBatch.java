@@ -10,6 +10,7 @@ import java.util.concurrent.Callable;
 
 import static java.nio.file.Files.newBufferedWriter;
 import static java.util.Objects.requireNonNull;
+import static uk.co.varia.nomenclator.cli.internal.NormaliserImpl.DEFAULT_THRESHOLD;
 
 @Command(name = "normaliseBatch", description = "Normalise a file of titles against a list of normalised titles")
 public class NormaliseBatch implements Callable<Integer> {
@@ -30,18 +31,25 @@ public class NormaliseBatch implements Callable<Integer> {
             description = "Path to file containing normalised titles")
     private Path titles = null;
 
+    @SuppressWarnings("FieldMayBeFinal")
+    @Option(names = {"--threshold", "-th"},
+            description = "Threshold required to match to a normalised title")
+    private Double threshold = null;
+
     @Override
     public Integer call() {
         requireNonNull(inputPath, "Input path required");
         requireNonNull(outputPath, "Output path required");
 
         System.out.printf("Normalising job titles from file [%s]...%n", this.inputPath);
-        final var normalised = this.nomenclatorCLI.normalise(this.inputPath, this.titles);
+        final var normalised = this.nomenclatorCLI.normalise(this.inputPath, this.titles, this.threshold);
 
         try (final var writer = newBufferedWriter(this.outputPath)) {
             normalised.forEach(title -> {
                 try {
-                    writer.write(title);
+                    writer.write(title.orElse("No match found >= threshold [%.2f]".formatted(this.threshold != null
+                                                                                             ? this.threshold
+                                                                                             : DEFAULT_THRESHOLD )));
                     writer.newLine();
                 } catch (final IOException ex) {
                     throw new RuntimeException("Failed to write normalised title", ex);
