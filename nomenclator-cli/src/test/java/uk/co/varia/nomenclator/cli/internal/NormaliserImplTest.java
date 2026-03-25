@@ -202,18 +202,18 @@ class NormaliserImplTest {
     void normalise_batchFromFile_returnsAllNormalised() {
         final var inputPath = Path.of("src/test/resources/csv/toNormalise.csv");
         final var result = this.cli.normalise(inputPath, null, null)
-                .map(title -> title.orElse("No match found"))
-                .toList();
+                                   .map(title -> title.orElse("No match found"))
+                                   .toList();
         logger.debug("Batch from file results — {}", result);
         assertThat(result).containsExactly("Software engineer",
-                "No match found",
-                "Accountant",
-                "Accountant",
-                "Software engineer",
-                "Accountant",
-                "Software engineer",
-                "Software engineer",
-                "Accountant");
+                                           "No match found",
+                                           "Accountant",
+                                           "Accountant",
+                                           "Software engineer",
+                                           "Accountant",
+                                           "Software engineer",
+                                           "Software engineer",
+                                           "Accountant");
     }
 
     @Test
@@ -221,31 +221,31 @@ class NormaliserImplTest {
         final var inputPath = Path.of("src/test/resources/csv/toNormalise.csv");
         final var titlesPath = Path.of("src/test/resources/csv/multi_line.csv");
         final var result = this.cli.normalise(inputPath, titlesPath, null)
-                .map(title -> title.orElse("No match found"))
-                .toList();
+                                   .map(title -> title.orElse("No match found"))
+                                   .toList();
         logger.debug("Batch from file with custom titles results: [{}]", result);
         assertThat(result).containsExactly("DevOps Engineer",
-                "No match found",
-                "Accountant",
-                "Accountant",
-                "DevOps Engineer",
-                "Accountant",
-                "DevOps Engineer",
-                "Software Engineer",
-                "Accountant");
+                                           "No match found",
+                                           "Accountant",
+                                           "Accountant",
+                                           "DevOps Engineer",
+                                           "Accountant",
+                                           "DevOps Engineer",
+                                           "Software Engineer",
+                                           "Accountant");
     }
 
     @Test
     void normaliseBatch_fromStream_returnsAllNormalised() {
         final var result = this.cli.normalise(Stream.of("Java engineer", "Chief Accountant", "Back end engineer"),
-                        null,
-                        null)
-                .map(title -> title.orElse("No match found"))
-                .toList();
+                                              null,
+                                              null)
+                                   .map(title -> title.orElse("No match found"))
+                                   .toList();
         logger.debug("Batch from stream results: [{}]", result);
         assertThat(result).containsExactly("Software engineer",
-                "Accountant",
-                "Software engineer");
+                                           "Accountant",
+                                           "Software engineer");
     }
 
     @Test
