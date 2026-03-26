@@ -20,7 +20,8 @@ public class Normalise implements Callable<Integer> {
 
     @SuppressWarnings("unused")
     @Parameters(paramLabel = "<title>",
-                description = "Job title to normalise")
+                description = "Job title to normalise",
+                converter = TitleConverter.class)
     private String title;
 
     @SuppressWarnings("FieldMayBeFinal")
@@ -30,7 +31,8 @@ public class Normalise implements Callable<Integer> {
 
     @SuppressWarnings("FieldMayBeFinal")
     @Option(names = {"--threshold", "-th"},
-            description = "Threshold required to match to a normalised title")
+            description = "Threshold required to match to a normalised title",
+            converter = ThresholdConverter.class)
     private Double threshold = null;
 
     @Override
